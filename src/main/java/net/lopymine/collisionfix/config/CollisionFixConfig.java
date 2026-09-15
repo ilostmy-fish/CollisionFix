@@ -8,6 +8,7 @@ import lombok.*;
 import net.lopymine.collisionfix.CollisionFix;
 import net.lopymine.mossylib.loader.MossyLoader;
 import net.lopymine.mossylib.utils.*;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import org.slf4j.*;
 import static com.mojang.serialization.codecs.RecordCodecBuilder.create;
@@ -20,7 +21,7 @@ public class CollisionFixConfig {
 
 	public static final Codec<CollisionFixConfig> CODEC = create((instance) -> instance.group(
 			option("mod_enabled", true, Codec.BOOL, CollisionFixConfig::isModEnabled),
-			option("entity_list", new HashSet<>(), Identifier.CODEC, CollisionFixConfig::getEntityList),
+			option("entity_list", getDefaultEntityList(), Identifier.CODEC, CollisionFixConfig::getEntityList),
 			option("server_list", new ArrayList<>(List.of("hypixel.net", "server_ip_here")), Codec.STRING.listOf(), CollisionFixConfig::getServersList),
 			option("server_list_mode", ListMode.BLACKLIST, ListMode.CODEC, CollisionFixConfig::getServerListMode)
 	).apply(instance, CollisionFixConfig::new));
@@ -36,6 +37,14 @@ public class CollisionFixConfig {
 
 	private CollisionFixConfig() {
 		throw new IllegalArgumentException();
+	}
+
+	private static HashSet<Identifier> getDefaultEntityList() {
+		HashSet<Identifier> entityList = new HashSet<>();
+		for (var entry : BuiltInRegistries.ENTITY_TYPE.entrySet()) {
+			entityList.add(entry.getKey().identifier());
+		}
+		return entityList;
 	}
 
 	public static CollisionFixConfig getInstance() {
